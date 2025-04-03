@@ -1,0 +1,6 @@
+{
+    "dart.flutterSdkPath": "YOUR_FLUTTER_SDK_PATH",
+    "python.pythonPath": "YOUR_PYTHON_PATH",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true
+}
