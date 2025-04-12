@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'screens/main_menu.dart';
 import 'screens/onboarding_screen.dart';
-import 'utils/theme_provider.dart' as utils;
 import 'styles.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => utils.ThemeProvider(),
-      child: PsychInsightPro(),
-    ),
-  );
+  runApp(PsychInsightPro());
 }
 
 class PsychInsightPro extends StatelessWidget {
@@ -19,13 +11,11 @@ class PsychInsightPro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return MaterialApp(
       title: 'PsychInsightPro',
       theme: AppStyles.lightTheme,
       darkTheme: AppStyles.darkTheme,
-      themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: ThemeMode.system,
       home: OnboardingScreen(),
       debugShowCheckedModeBanner: false,
     );

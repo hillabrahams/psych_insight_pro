@@ -50,43 +50,13 @@ class DBHelper {
 
   // Insert a new entry into the database
   Future<int> insertEntry(Map<String, dynamic> entry) async {
-    Database db = await database;
-    return await db.insert(tableEntries, entry);
-  }
+    final Database db = await database;
 
-  // Retrieve all entries from the database
-  Future<List<Map<String, dynamic>>> getAllEntries() async {
-    Database db = await database;
-    return await db.query(tableEntries, orderBy: "$columnTimestamp DESC");
-  }
-
-  // Retrieve entries by date range
-  Future<List<Map<String, dynamic>>> getEntriesByDateRange(
-    String startDate,
-    String endDate,
-  ) async {
-    Database db = await database;
-    return await db.query(
-      tableEntries,
-      where: "$columnTimestamp BETWEEN ? AND ?",
-      whereArgs: [startDate, endDate],
-      orderBy: "$columnTimestamp DESC",
-    );
-  }
-
-  // Delete an entry by ID
-  Future<int> deleteEntry(int id) async {
-    Database db = await database;
-    return await db.delete(
-      tableEntries,
-      where: "$columnId = ?",
-      whereArgs: [id],
-    );
-  }
-
-  // Close the database
-  Future<void> close() async {
-    Database db = await database;
-    await db.close();
+    try {
+      return await db.insert(tableEntries, entry);
+    } catch (e) {
+      print("Error inserting entry: $e");
+      return -1; // Return a negative number if insertion fails
+    }
   }
 }

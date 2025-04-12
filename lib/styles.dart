@@ -9,64 +9,50 @@ class AppStyles {
   static final Color negativeColor = Colors.red;
   static final Color neutralColor = Colors.grey;
 
-  static final TextStyle heading = GoogleFonts.lato(
+  // Heading Style
+  static var heading = GoogleFonts.lato(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     color: primaryColor,
   );
 
-  static final TextStyle subheading = GoogleFonts.lato(
+  // Subheading Style
+  static var subheading = GoogleFonts.lato(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: Colors.black87,
   );
 
-  static final TextStyle bodyText = GoogleFonts.lato(
-    fontSize: 16,
-    color: Colors.black87,
-  );
-
-  static final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+  // Button Style
+  static var buttonStyle = ElevatedButton.styleFrom(
     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-    textStyle: TextStyle(fontSize: 18),
+    textStyle: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.bold),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    backgroundColor: primaryColor,
+    foregroundColor: Colors.white,
   );
 
   // Light Theme
   static final ThemeData lightTheme = ThemeData(
-    primarySwatch: Colors.indigo,
     brightness: Brightness.light,
-    primaryColor: primaryColor,
-    hintColor: accentColor,
+    colorScheme: ColorScheme.light(
+      primary: primaryColor,
+      secondary: accentColor,
+      brightness: Brightness.light,
+    ),
     textTheme: GoogleFonts.latoTextTheme(),
     scaffoldBackgroundColor: Colors.white,
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: buttonStyle.copyWith(
-        backgroundColor: WidgetStateProperty.all(primaryColor),
-      ),
-    ),
-    cardColor: Colors.white,
-    dialogTheme: DialogThemeData(backgroundColor: Colors.white),
   );
 
   // Dark Theme
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    primaryColor: primaryColor,
-    textTheme: GoogleFonts.latoTextTheme().apply(
-      bodyColor: Colors.white,
-      displayColor: Colors.white,
+    colorScheme: ColorScheme.dark(
+      primary: primaryColor,
+      secondary: accentColor,
+      brightness: Brightness.dark,
     ),
+    textTheme: GoogleFonts.latoTextTheme().apply(bodyColor: Colors.white),
     scaffoldBackgroundColor: Colors.black,
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: buttonStyle.copyWith(
-        backgroundColor: WidgetStateProperty.all(accentColor),
-      ),
-    ),
-    cardColor: Colors.grey[800],
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: Colors.indigo,
-    ).copyWith(secondary: accentColor),
-    dialogTheme: DialogThemeData(backgroundColor: Colors.grey[850]),
   );
 }
