@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -9,13 +11,43 @@ class JournalAnalyzerScreen extends StatefulWidget {
   _JournalAnalyzerScreenState createState() => _JournalAnalyzerScreenState();
 }
 
+bool isNeglectFuzzy(String text, {int threshold = 85}) {
+  final lower = text.toLowerCase();
+  final List<String> neglectPhrases = [
+    "no one noticed",
+    "nobody cared",
+    "ignored",
+    "forgotten",
+    "no one asked",
+    "you didn’t ask",
+    "i was upset but",
+    "you didn’t respond",
+    "no one called",
+    "i felt invisible",
+    "i was left out",
+    "you didn’t say goodnight",
+    "you didn’t listen",
+    "you didn’t see me",
+    "i don’t think you noticed",
+    "they didn’t care",
+    "nobody showed up",
+    "i didn’t matter",
+  ];
+
+  for (var phrase in neglectPhrases) {
+    if (ratio(phrase, lower) > threshold) return true;
+  }
+
+  return false;
+}
+
 class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   final TextEditingController _controller = TextEditingController();
   String? score;
   String? reasoning;
   String? confidence;
   int? sentimentScore;
-
+  bool? isNeglect = true;
   void _submitText() async {
     final result = await analyzeEntry(_controller.text);
     if (result != null) {
@@ -24,6 +56,14 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
         sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
+        if (isNeglectFuzzy(_controller.text)) {
+          isNeglect = true;
+          if (kDebugMode) {
+            print("Neglect detected: $isNeglect");
+          } else {
+            isNeglect = false;
+          }
+        }
       });
     } else {
       setState(() {
@@ -82,7 +122,10 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
               if (sentimentScore! <= -1) ...[
                 Image.asset('assets/images/abuse1.png'),
               ],
-              Text("Score: $score", style: TextStyle(fontSize: 18)),
+              if (isNeglect == true) ...[
+                Image.asset('assets/images/neglect1.png'),
+              ],
+              Text("Score: $score, $isNeglect", style: TextStyle(fontSize: 18)),
               Text("Reasoning: $reasoning", style: TextStyle(fontSize: 16)),
               Text("Confidence: $confidence", style: TextStyle(fontSize: 16)),
             ],

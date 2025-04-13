@@ -43,6 +43,9 @@ dependencies:
   sqflite: ^2.0.0+4
   http: any
 
+  fuzzywuzzy: ^1.2.0
+  rapidfuzz: ^0.1.1
+
 
 
 
