@@ -14,12 +14,14 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   String? score;
   String? reasoning;
   String? confidence;
+  int? sentimentScore;
 
   void _submitText() async {
     final result = await analyzeEntry(_controller.text);
     if (result != null) {
       setState(() {
         score = result['score'].toString();
+        sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
       });
@@ -34,7 +36,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
 
   Future<Map<String, dynamic>?> analyzeEntry(String entryText) async {
     final url = Uri.parse(
-      "http://localhost:8000/auto_label",
+      "http://10.0.2.2:8000/auto_label",
     ); // On Android emulator, use http://10.0.2.2:8000/auto_label instead of localhost.
     final response = await http.post(
       url,
@@ -45,7 +47,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print("API Error: ${response.statusCode} ${response.body}");
+      //print("API Error: ${response.statusCode} ${response.body}");
       return null;
     }
   }
@@ -67,9 +69,19 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
               ),
             ),
             SizedBox(height: 12),
-            ElevatedButton(onPressed: _submitText, child: Text("Analyze")),
+            ElevatedButton(
+              onPressed: _submitText,
+              child: Text("Analyze and Save"),
+            ),
+
             if (score != null) ...[
               SizedBox(height: 20),
+              if (sentimentScore! >= 1) ...[
+                Image.asset('assets/images/care1.png'),
+              ],
+              if (sentimentScore! <= -1) ...[
+                Image.asset('assets/images/abuse1.png'),
+              ],
               Text("Score: $score", style: TextStyle(fontSize: 18)),
               Text("Reasoning: $reasoning", style: TextStyle(fontSize: 16)),
               Text("Confidence: $confidence", style: TextStyle(fontSize: 16)),

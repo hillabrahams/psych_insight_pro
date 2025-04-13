@@ -55,7 +55,7 @@ class DBHelper {
     try {
       return await db.insert(tableEntries, entry);
     } catch (e) {
-      print("Error inserting entry: $e");
+      //print("Error inserting entry: $e");
       return -1; // Return a negative number if insertion fails
     }
   }

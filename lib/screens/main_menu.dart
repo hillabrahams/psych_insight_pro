@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:psych_insight_pro/screens/journal_analyzer_screen.dart';
 import '../styles.dart';
-import 'new_entry_screen.dart';
 import 'reports_screen.dart';
 
 class MainMenu extends StatelessWidget {
