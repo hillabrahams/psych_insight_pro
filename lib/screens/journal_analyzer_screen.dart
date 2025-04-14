@@ -11,7 +11,7 @@ class JournalAnalyzerScreen extends StatefulWidget {
   _JournalAnalyzerScreenState createState() => _JournalAnalyzerScreenState();
 }
 
-bool isNeglectFuzzy(String text, {int threshold = 85}) {
+bool isNeglectFuzzy(String text, {int threshold = 60}) {
   final lower = text.toLowerCase();
   final List<String> neglectPhrases = [
     "no one noticed",
@@ -35,6 +35,10 @@ bool isNeglectFuzzy(String text, {int threshold = 85}) {
   ];
 
   for (var phrase in neglectPhrases) {
+    if (kDebugMode) {
+      print("Comparing: $phrase with $lower");
+      print("Ratio: ${ratio(phrase, lower)}");
+    }
     if (ratio(phrase, lower) > threshold) return true;
   }
 
@@ -47,7 +51,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   String? reasoning;
   String? confidence;
   int? sentimentScore;
-  bool? isNeglect = true;
+  bool? isNeglect = false;
   void _submitText() async {
     final result = await analyzeEntry(_controller.text);
     if (result != null) {
@@ -56,12 +60,16 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
         sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
+        if (kDebugMode) {
+          print(_controller.text.toString());
+        }
         if (isNeglectFuzzy(_controller.text)) {
           isNeglect = true;
           if (kDebugMode) {
             print("Neglect detected: $isNeglect");
-          } else {
+          } else if (kDebugMode) {
             isNeglect = false;
+            print("Neglect not detected: $isNeglect");
           }
         }
       });
@@ -125,7 +133,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
               if (isNeglect == true) ...[
                 Image.asset('assets/images/neglect1.png'),
               ],
-              Text("Score: $score, $isNeglect", style: TextStyle(fontSize: 18)),
+              Text("Score: $score", style: TextStyle(fontSize: 18)),
               Text("Reasoning: $reasoning", style: TextStyle(fontSize: 16)),
               Text("Confidence: $confidence", style: TextStyle(fontSize: 16)),
             ],
