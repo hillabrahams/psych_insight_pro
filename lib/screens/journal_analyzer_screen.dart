@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../utils/journal_database.dart';
+import '../models/journal_entry.dart';
 
 class JournalAnalyzerScreen extends StatefulWidget {
   const JournalAnalyzerScreen({super.key});
@@ -48,30 +50,64 @@ bool isNeglectFuzzy(String text, {int threshold = 60}) {
 class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   final TextEditingController _controller = TextEditingController();
   String? score;
+  String? text;
   String? reasoning;
   String? confidence;
   int? sentimentScore;
   bool? isNeglect = false;
+  // void _submitText() async {
+  //   final result = await analyzeEntry(_controller.text);
+  //   if (result != null) {
+  //     setState(() {
+  //       score = result['score'].toString();
+  //       text = result['text'];
+  //       sentimentScore = result['score'];
+  //       reasoning = result['reasoning'];
+  //       confidence = result['confidence'].toString();
+  //       if (kDebugMode) {
+  //         print(_controller.text.toString());
+  //       }
+  //       if (isNeglectFuzzy(_controller.text)) {
+  //         isNeglect = true;
+  //         if (kDebugMode) {
+  //           print("Neglect detected: $isNeglect");
+  //         } else if (kDebugMode) {
+  //           isNeglect = false;
+  //           print("Neglect not detected: $isNeglect");
+  //         }
+  //       }
+  //     });
+  //   } else {
+  //     setState(() {
+  //       score = "Error";
+  //       reasoning = "Could not get response from API.";
+  //       confidence = "";
+  //     });
+  //   }
+  // }
   void _submitText() async {
-    final result = await analyzeEntry(_controller.text);
+    final entryInput = _controller.text;
+    final result = await analyzeEntry(entryInput);
+
     if (result != null) {
+      final detectedNeglect = isNeglectFuzzy(entryInput);
+      final newEntry = JournalEntry(
+        text: entryInput,
+        score: result['score'],
+        reasoning: result['reasoning'],
+        confidence: result['confidence'].toString(),
+        isNeglect: detectedNeglect,
+      );
+
+      await JournalDatabase.instance.insertEntry(newEntry);
+
       setState(() {
         score = result['score'].toString();
+        text = result['text'];
         sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
-        if (kDebugMode) {
-          print(_controller.text.toString());
-        }
-        if (isNeglectFuzzy(_controller.text)) {
-          isNeglect = true;
-          if (kDebugMode) {
-            print("Neglect detected: $isNeglect");
-          } else if (kDebugMode) {
-            isNeglect = false;
-            print("Neglect not detected: $isNeglect");
-          }
-        }
+        isNeglect = detectedNeglect;
       });
     } else {
       setState(() {
