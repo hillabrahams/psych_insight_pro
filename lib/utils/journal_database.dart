@@ -10,7 +10,7 @@ class JournalDatabase {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('journal.db');
+    _database = await _initDB('psychinsightpro.db');
     return _database!;
   }
 
@@ -29,7 +29,8 @@ class JournalDatabase {
         score INTEGER,
         reasoning TEXT,
         confidence TEXT,
-        isNeglect INTEGER
+        isNeglect INTEGER DEFAULT 0,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP
       )
     ''');
   }

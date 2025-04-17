@@ -146,7 +146,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
           children: [
             TextField(
               controller: _controller,
-              maxLines: 5,
+              maxLines: 8,
               decoration: InputDecoration(
                 labelText: "Enter your journal entry",
                 border: OutlineInputBorder(),

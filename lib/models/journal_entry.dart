@@ -25,4 +25,15 @@ class JournalEntry {
       'isNeglect': isNeglect ? 1 : 0,
     };
   }
+
+  factory JournalEntry.fromMap(Map<String, dynamic> map) {
+    return JournalEntry(
+      id: map['id'],
+      text: map['text'],
+      score: map['score'],
+      reasoning: map['reasoning'],
+      confidence: map['confidence'],
+      isNeglect: map['isNeglect'] == 1,
+    );
+  }
 }
