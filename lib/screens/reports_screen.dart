@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import '../styles.dart';
 import '../utils/notification_service.dart';
@@ -105,66 +103,89 @@ class _ReportsScreenState extends State<ReportsScreen> {
       return const Text('No data found for selected range.');
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Select')),
-          DataColumn(label: Text('Text')),
-          DataColumn(label: Text('Score')),
-          DataColumn(label: Text('Reasoning')),
-          DataColumn(label: Text('Confidence')),
-          DataColumn(label: Text('Neglect')),
-          DataColumn(label: Text('Actions')),
-        ],
-        rows:
-            _entries.map((entry) {
-              return DataRow(
-                selected: _selectedEntryIds.contains(entry.id),
-                cells: [
-                  DataCell(
-                    Checkbox(
-                      value: _selectedEntryIds.contains(entry.id),
-                      onChanged: (val) {
-                        setState(() {
-                          if (val == true) {
-                            _selectedEntryIds.add(entry.id!);
-                          } else {
-                            _selectedEntryIds.remove(entry.id);
-                          }
-                        });
-                      },
+    return DataTable(
+      dataRowMinHeight: 60,
+      dataRowMaxHeight: 300,
+      columns: const [
+        DataColumn(label: Text('Select')),
+        DataColumn(label: Text('Text')),
+        DataColumn(label: Text('Score')),
+        DataColumn(label: Text('Reasoning')),
+        DataColumn(label: Text('Confidence')),
+        DataColumn(label: Text('Neglect')),
+        DataColumn(label: Text('Actions')),
+      ],
+      rows:
+          _entries.map((entry) {
+            return DataRow(
+              selected: _selectedEntryIds.contains(entry.id),
+              cells: [
+                DataCell(
+                  Checkbox(
+                    value: _selectedEntryIds.contains(entry.id),
+                    onChanged: (val) {
+                      setState(() {
+                        if (val == true) {
+                          _selectedEntryIds.add(entry.id!);
+                        } else {
+                          _selectedEntryIds.remove(entry.id);
+                        }
+                      });
+                    },
+                  ),
+                ),
+                DataCell(
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 200,
+                      maxWidth: 200,
+                    ),
+                    child: Text(
+                      entry.text,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
-                  DataCell(Text(entry.text)),
-                  DataCell(Text(entry.score.toString())),
-                  DataCell(Text(entry.reasoning)),
-                  DataCell(Text(entry.confidence)),
-                  DataCell(Text(entry.isNeglect ? 'Yes' : 'No')),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            NotificationService.showInfoDialog(
-                              context,
-                              'Info',
-                              'Edit not implemented yet.',
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteEntry(entry.id!),
-                        ),
-                      ],
+                ),
+                DataCell(Text(entry.score.toString())),
+                DataCell(
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 200,
+                      maxWidth: 200,
+                    ),
+                    child: Text(
+                      entry.reasoning,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
-                ],
-              );
-            }).toList(),
-      ),
+                ),
+                DataCell(Text(entry.confidence)),
+                DataCell(Text(entry.isNeglect ? 'Yes' : 'No')),
+                DataCell(
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          NotificationService.showInfoDialog(
+                            context,
+                            'Info',
+                            'Edit not implemented yet.',
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteEntry(entry.id!),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
     );
   }
 
@@ -201,7 +222,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
             const SizedBox(height: 16),
             _loading
                 ? const CircularProgressIndicator()
-                : Expanded(child: _buildDataTable()),
+                : Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: _buildDataTable(),
+                    ),
+                  ),
+                ),
           ],
         ),
       ),
