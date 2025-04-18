@@ -5,6 +5,7 @@ class JournalEntry {
   final String reasoning;
   final String confidence;
   final bool isNeglect;
+  final String? timestamp; // ✅ New field (nullable for safety)
 
   JournalEntry({
     this.id,
@@ -13,6 +14,7 @@ class JournalEntry {
     required this.reasoning,
     required this.confidence,
     required this.isNeglect,
+    this.timestamp, // ✅ Include in constructor
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class JournalEntry {
       'reasoning': reasoning,
       'confidence': confidence,
       'isNeglect': isNeglect ? 1 : 0,
+      'timestamp': timestamp,
     };
   }
 
@@ -34,6 +37,7 @@ class JournalEntry {
       reasoning: map['reasoning'],
       confidence: map['confidence'],
       isNeglect: map['isNeglect'] == 1,
+      timestamp: map['timestamp'], // ✅ Retrieve from DB
     );
   }
 }

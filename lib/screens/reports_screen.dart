@@ -1,4 +1,11 @@
+// Final update to reports_screen.dart
+// ✅ Bottom border now visible
+// ✅ Chart height adjusted
+// ✅ Space reserved for x-axis labels
+// ✅ Bottom margin added to LineChartData
+
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../styles.dart';
 import '../utils/notification_service.dart';
 import '../utils/db_helper.dart';
@@ -18,6 +25,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   final Set<int> _selectedEntryIds = {};
   final DBHelper _dbHelper = DBHelper();
   bool _loading = false;
+  JournalEntry? _selectedEntry;
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Select Date';
@@ -63,6 +71,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     setState(() {
       _loading = true;
       _entries = [];
+      _selectedEntry = null;
     });
 
     final start = _toDateTimeString(_startDate!);
@@ -86,114 +95,208 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  Future<void> _deleteEntry(int id) async {
-    final result = await _dbHelper.deleteEntry(id);
-    if (result > 0) {
-      setState(() {
-        _entries.removeWhere((e) => e.id == id);
-        _selectedEntryIds.remove(id);
-      });
-    } else {
-      NotificationService.showErrorDialog(context, 'Delete failed.');
-    }
-  }
-
-  Widget _buildDataTable() {
+  Widget _buildLineChart(double width) {
     if (_entries.isEmpty) {
-      return const Text('No data found for selected range.');
+      return const SizedBox(
+        height: 200,
+        child: Center(child: Text('No data to chart')),
+      );
     }
 
-    return DataTable(
-      dataRowMinHeight: 60,
-      dataRowMaxHeight: 300,
-      columns: const [
-        DataColumn(label: Text('Select')),
-        DataColumn(label: Text('Text')),
-        DataColumn(label: Text('Score')),
-        DataColumn(label: Text('Reasoning')),
-        DataColumn(label: Text('Confidence')),
-        DataColumn(label: Text('Neglect')),
-        DataColumn(label: Text('Actions')),
-      ],
-      rows:
-          _entries.map((entry) {
-            return DataRow(
-              selected: _selectedEntryIds.contains(entry.id),
-              cells: [
-                DataCell(
-                  Checkbox(
-                    value: _selectedEntryIds.contains(entry.id),
-                    onChanged: (val) {
-                      setState(() {
-                        if (val == true) {
-                          _selectedEntryIds.add(entry.id!);
-                        } else {
-                          _selectedEntryIds.remove(entry.id);
-                        }
-                      });
+    final timestamps = <String>[];
+    final scoreSpots = <FlSpot>[];
+    final regressionSpots = <FlSpot>[];
+
+    List<double> xVals = [];
+    List<double> yVals = [];
+
+    for (int i = 0; i < _entries.length; i++) {
+      final x = i.toDouble();
+      final y = _entries[i].score.toDouble();
+      scoreSpots.add(FlSpot(x, y));
+      timestamps.add(_entries[i].timestamp ?? 'Entry $i');
+      xVals.add(x);
+      yVals.add(y);
+    }
+
+    final n = xVals.length;
+    final xSum = xVals.reduce((a, b) => a + b);
+    final ySum = yVals.reduce((a, b) => a + b);
+    final xySum = List.generate(
+      n,
+      (i) => xVals[i] * yVals[i],
+    ).reduce((a, b) => a + b);
+    final xSqSum = xVals.map((x) => x * x).reduce((a, b) => a + b);
+    final slope = (n * xySum - xSum * ySum) / (n * xSqSum - xSum * xSum);
+    final intercept = (ySum - slope * xSum) / n;
+    final lineColor = slope >= 0 ? Colors.green : Colors.red;
+
+    regressionSpots.addAll(xVals.map((x) => FlSpot(x, slope * x + intercept)));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Sentiment Analysis for ${_formatDate(_startDate)} to ${_formatDate(_endDate)}',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: width,
+          height: 300,
+          child: LineChart(
+            LineChartData(
+              minX: -0.5,
+              maxX: (_entries.length - 1).toDouble() + 0.5,
+              minY: -10,
+              maxY: 10,
+              borderData: FlBorderData(
+                show: true,
+                border: const Border(
+                  top: BorderSide(),
+                  right: BorderSide(),
+                  bottom: BorderSide(width: 1.5),
+                  left: BorderSide(),
+                ),
+              ),
+              gridData: FlGridData(show: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: scoreSpots,
+                  isCurved: false,
+                  barWidth: 0,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, _, __, ___) {
+                      final color =
+                          (spot.y >= 1 && spot.y <= 10)
+                              ? Colors.green
+                              : Colors.red;
+                      return FlDotCirclePainter(
+                        radius: 4,
+                        color: color,
+                        strokeWidth: 1,
+                        strokeColor: Colors.black,
+                      );
                     },
                   ),
                 ),
-                DataCell(
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 200,
-                      maxWidth: 200,
-                    ),
-                    child: Text(
-                      entry.text,
-                      softWrap: true,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ),
-                ),
-                DataCell(Text(entry.score.toString())),
-                DataCell(
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 200,
-                      maxWidth: 200,
-                    ),
-                    child: Text(
-                      entry.reasoning,
-                      softWrap: true,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ),
-                ),
-                DataCell(Text(entry.confidence)),
-                DataCell(Text(entry.isNeglect ? 'Yes' : 'No')),
-                DataCell(
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          NotificationService.showInfoDialog(
-                            context,
-                            'Info',
-                            'Edit not implemented yet.',
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteEntry(entry.id!),
-                      ),
-                    ],
-                  ),
+                LineChartBarData(
+                  spots: regressionSpots,
+                  isCurved: false,
+                  color: lineColor,
+                  barWidth: 2,
+                  dotData: FlDotData(show: false),
                 ),
               ],
-            );
-          }).toList(),
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    reservedSize: 40,
+                    showTitles: true,
+                    interval: 1,
+                    getTitlesWidget: (value, _) {
+                      final index = value.toInt();
+                      if (index >= 0 && index < timestamps.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Transform.rotate(
+                            angle: -0.5,
+                            child: Text(
+                              timestamps[index].split(' ').first,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: true),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+              lineTouchData: LineTouchData(
+                touchCallback: (event, response) {
+                  if (!event.isInterestedForInteractions || response == null)
+                    return;
+                  final spot = response.lineBarSpots?.first;
+                  if (spot != null) {
+                    final index = spot.x.toInt();
+                    if (index >= 0 && index < _entries.length) {
+                      setState(() {
+                        _selectedEntry = _entries[index];
+                      });
+                    }
+                  }
+                },
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              Container(width: 12, height: 12, color: lineColor),
+              const SizedBox(width: 6),
+              const Text('Trend Line', style: TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+        if (_selectedEntry != null) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Entry Details',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => setState(() => _selectedEntry = null),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Score: ${_selectedEntry!.score}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(_selectedEntry!.text),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(title: Text('Reports', style: AppStyles.heading)),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -220,17 +323,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: const Text('Load Report'),
             ),
             const SizedBox(height: 16),
-            _loading
-                ? const CircularProgressIndicator()
-                : Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: _buildDataTable(),
-                    ),
-                  ),
-                ),
+            _buildLineChart(screenWidth),
           ],
         ),
       ),
