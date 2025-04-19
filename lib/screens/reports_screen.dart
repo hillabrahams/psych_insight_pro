@@ -209,7 +209,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       final index = value.toInt();
                       if (index >= 0 && index < timestamps.length) {
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
+                          padding: const EdgeInsets.only(top: 18.0),
                           child: Transform.rotate(
                             angle: -0.5,
                             child: Text(
