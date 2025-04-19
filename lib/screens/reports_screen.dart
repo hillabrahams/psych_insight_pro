@@ -1,11 +1,8 @@
-// Final update to reports_screen.dart
-// ✅ Bottom border now visible
-// ✅ Chart height adjusted
-// ✅ Space reserved for x-axis labels
-// ✅ Bottom margin added to LineChartData
+// Full reports_screen.dart with TTS voice playback for entries
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../styles.dart';
 import '../utils/notification_service.dart';
 import '../utils/db_helper.dart';
@@ -24,8 +21,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<JournalEntry> _entries = [];
   final Set<int> _selectedEntryIds = {};
   final DBHelper _dbHelper = DBHelper();
+  final FlutterTts flutterTts = FlutterTts();
   bool _loading = false;
   JournalEntry? _selectedEntry;
+
+  Future<void> _speakEntry(JournalEntry entry) async {
+    await flutterTts.stop();
+    final String message =
+        'Score: ${entry.score}. '
+        '${entry.text}. '
+        'Reasoning: ${entry.reasoning}. '
+        'Confidence: ${entry.confidence}. '
+        'Neglect: ${entry.isNeglect ? "Yes" : "No"}.';
+    await flutterTts.speak(message);
+  }
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Select Date';
@@ -215,7 +224,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                 ),
                 leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: true),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 32,
+                    getTitlesWidget: (value, _) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(fontSize: 10),
+                          textAlign: TextAlign.right,
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 topTitles: AxisTitles(
                   sideTitles: SideTitles(showTitles: false),
@@ -271,6 +293,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
                     const Spacer(),
                     IconButton(
+                      icon: const Icon(Icons.volume_up),
+                      onPressed: () => _speakEntry(_selectedEntry!),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () => setState(() => _selectedEntry = null),
                     ),
@@ -282,6 +308,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(_selectedEntry!.text),
+                const SizedBox(height: 8),
+                const Text(
+                  'Reasoning:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(_selectedEntry!.reasoning),
+                const SizedBox(height: 8),
+                Text('Confidence: ${_selectedEntry!.confidence}'),
+                Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
               ],
             ),
           ),
