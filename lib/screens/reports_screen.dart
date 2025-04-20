@@ -369,6 +369,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   const SizedBox(height: 8),
                   Text('Confidence: ${_selectedEntry!.confidence}'),
                   Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
+                  Text('Date & Time: ${_selectedEntry!.timestamp}'),
                 ],
               ),
             ),

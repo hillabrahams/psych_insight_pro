@@ -25,7 +25,9 @@ class JournalEntry {
       'reasoning': reasoning,
       'confidence': confidence,
       'isNeglect': isNeglect ? 1 : 0,
-      //'timestamp': timestamp,
+      'timestamp':
+          timestamp ??
+          DateTime.now().toString(), // ✅ Default to current time if null
     };
   }
 
