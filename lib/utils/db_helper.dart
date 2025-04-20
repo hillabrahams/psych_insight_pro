@@ -35,7 +35,7 @@ class DBHelper {
         reasoning TEXT NOT NULL,
         confidence TEXT NOT NULL,
         isNeglect INTEGER NOT NULL DEFAULT 0,
-        timestamp TEXT NULL DEFAULT CURRENT_TIMESTAMP
+        timestamp TEXT NOT NULL DEFAULT "${DateTime.now().toIso8601String()}"
       )
     ''');
   }

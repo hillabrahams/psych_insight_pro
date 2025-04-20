@@ -30,7 +30,7 @@ class JournalDatabase {
         reasoning TEXT,
         confidence TEXT,
         isNeglect INTEGER DEFAULT 0,
-        timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+        timestamp TEXT DEFAULT "${DateTime.now().toString()}"
       )
     ''');
   }
