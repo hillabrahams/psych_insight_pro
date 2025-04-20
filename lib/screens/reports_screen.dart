@@ -274,50 +274,103 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ],
           ),
         ),
+        //   if (_selectedEntry != null) ...[
+        //     const SizedBox(height: 10),
+        //     Container(
+        //       padding: const EdgeInsets.all(12),
+        //       decoration: BoxDecoration(
+        //         color: Colors.grey[200],
+        //         borderRadius: BorderRadius.circular(10),
+        //       ),
+        //       child: Column(
+        //         crossAxisAlignment: CrossAxisAlignment.start,
+        //         children: [
+        //           Row(
+        //             children: [
+        //               const Text(
+        //                 'Entry Details',
+        //                 style: TextStyle(fontWeight: FontWeight.bold),
+        //               ),
+        //               const Spacer(),
+        //               IconButton(
+        //                 icon: const Icon(Icons.volume_up),
+        //                 onPressed: () => _speakEntry(_selectedEntry!),
+        //               ),
+        //               IconButton(
+        //                 icon: const Icon(Icons.close),
+        //                 onPressed: () => setState(() => _selectedEntry = null),
+        //               ),
+        //             ],
+        //           ),
+        //           Text(
+        //             'Score: ${_selectedEntry!.score}',
+        //             style: const TextStyle(fontWeight: FontWeight.bold),
+        //           ),
+        //           const SizedBox(height: 4),
+        //           Text(_selectedEntry!.text),
+        //           const SizedBox(height: 8),
+        //           const Text(
+        //             'Reasoning:',
+        //             style: TextStyle(fontWeight: FontWeight.bold),
+        //           ),
+        //           Text(_selectedEntry!.reasoning),
+        //           const SizedBox(height: 8),
+        //           Text('Confidence: ${_selectedEntry!.confidence}'),
+        //           Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
+        //         ],
+        //       ),
+        //     ),
+        //   ],
+        // ],
         if (_selectedEntry != null) ...[
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: Colors.white, // Tooltip background
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Entry Details',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.volume_up),
-                      onPressed: () => _speakEntry(_selectedEntry!),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => setState(() => _selectedEntry = null),
-                    ),
-                  ],
-                ),
-                Text(
-                  'Score: ${_selectedEntry!.score}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(_selectedEntry!.text),
-                const SizedBox(height: 8),
-                const Text(
-                  'Reasoning:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(_selectedEntry!.reasoning),
-                const SizedBox(height: 8),
-                Text('Confidence: ${_selectedEntry!.confidence}'),
-                Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
-              ],
+            child: DefaultTextStyle(
+              style: const TextStyle(
+                color: Colors.blue,
+              ), // All tooltip text in blue
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Entry Details',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.volume_up),
+                        onPressed: () => _speakEntry(_selectedEntry!),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(() => _selectedEntry = null),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Score: ${_selectedEntry!.score}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(_selectedEntry!.text),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Reasoning:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(_selectedEntry!.reasoning),
+                  const SizedBox(height: 8),
+                  Text('Confidence: ${_selectedEntry!.confidence}'),
+                  Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
+                ],
+              ),
             ),
           ),
         ],
