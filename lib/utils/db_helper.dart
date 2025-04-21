@@ -35,6 +35,7 @@ class DBHelper {
         reasoning TEXT NOT NULL,
         confidence TEXT NOT NULL,
         isNeglect INTEGER NOT NULL DEFAULT 0,
+        isRepair INTEGER NOT NULL DEFAULT 0,
         timestamp TEXT NULL 
     ''');
   }

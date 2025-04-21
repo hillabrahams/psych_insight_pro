@@ -32,7 +32,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         '${entry.text}. '
         'Reasoning: ${entry.reasoning}. '
         'Confidence: ${entry.confidence}. '
-        'Neglect: ${entry.isNeglect ? "Yes" : "No"}.';
+        'Neglect: ${entry.isNeglect == 1 ? "Yes" : "No"}.';
+    'Repair: ${entry.isRepair == 1 ? "Yes" : "No"}.';
     await flutterTts.speak(message);
   }
 
@@ -248,8 +249,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
               lineTouchData: LineTouchData(
                 touchCallback: (event, response) {
-                  if (!event.isInterestedForInteractions || response == null)
+                  if (!event.isInterestedForInteractions || response == null) {
                     return;
+                  }
                   final spot = response.lineBarSpots?.first;
                   if (spot != null) {
                     final index = spot.x.toInt();
@@ -368,7 +370,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   Text(_selectedEntry!.reasoning),
                   const SizedBox(height: 8),
                   Text('Confidence: ${_selectedEntry!.confidence}'),
-                  Text('Neglect: ${_selectedEntry!.isNeglect ? "Yes" : "No"}'),
+                  Text(
+                    'Neglect: ${_selectedEntry!.isNeglect == 1 ? "Yes" : "No"}'
+                    ' Repair: ${_selectedEntry!.isRepair == 1 ? "Yes" : "No"}',
+                  ),
                   Text('Date & Time: ${_selectedEntry!.timestamp}'),
                 ],
               ),

@@ -30,6 +30,7 @@ class JournalDatabase {
         reasoning TEXT,
         confidence TEXT,
         isNeglect INTEGER DEFAULT 0,
+        isRepair INTEGER DEFAULT 0,
         timestamp TEXT 
       )
     ''');

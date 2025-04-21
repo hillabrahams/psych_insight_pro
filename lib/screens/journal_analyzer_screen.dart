@@ -39,7 +39,36 @@ bool isNeglectFuzzy(String text, {int threshold = 60}) {
   for (var phrase in neglectPhrases) {
     if (kDebugMode) {
       print("Comparing: $phrase with $lower");
-      print("Ratio: \${ratio(phrase, lower)}");
+      print("Ratio: ${ratio(phrase, lower)}");
+    }
+    if (ratio(phrase, lower) > threshold) return true;
+  }
+
+  return false;
+}
+
+bool isRepairFuzzy(String text, {int threshold = 20}) {
+  final lower = text.toLowerCase();
+  final List<String> repairPhrases = [
+    "sorry",
+    "apologize",
+    "forgive",
+    "make up",
+    "fix this",
+    "repair",
+    "reconcile",
+    "regret",
+    "understand",
+    "didn't mean to",
+    "move forward",
+    "want to make things right",
+    "what can I do",
+  ];
+
+  for (var phrase in repairPhrases) {
+    if (kDebugMode) {
+      print("Comparing: $phrase with $lower");
+      print("Ratio: ${ratio(phrase, lower)}");
     }
     if (ratio(phrase, lower) > threshold) return true;
   }
@@ -54,7 +83,8 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   String? reasoning;
   String? confidence;
   int? sentimentScore;
-  bool? isNeglect = false;
+  int? isNeglect = 0;
+  int? isRepair = 0;
 
   void _submitText() async {
     final entryInput = _controller.text;
@@ -62,12 +92,14 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
 
     if (result != null) {
       final detectedNeglect = isNeglectFuzzy(entryInput);
+      final detectedRepair = isRepairFuzzy(entryInput);
       final newEntry = JournalEntry(
         text: entryInput,
         score: result['score'],
         reasoning: result['reasoning'],
         confidence: result['confidence'].toString(),
-        isNeglect: detectedNeglect,
+        isNeglect: detectedNeglect ? 1 : 0,
+        isRepair: detectedRepair ? 1 : 0,
       );
 
       await JournalDatabase.instance.insertEntry(newEntry);
@@ -78,7 +110,8 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
         sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
-        isNeglect = detectedNeglect;
+        isNeglect = detectedNeglect ? 1 : 0;
+        isRepair = detectedRepair ? 1 : 0;
       });
     } else {
       setState(() {
@@ -133,9 +166,10 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
               if (sentimentScore! <= -1) ...[
                 Image.asset('assets/images/abuse1.png'),
               ],
-              if (isNeglect == true) ...[
+              if (isNeglect == 1) ...[
                 Image.asset('assets/images/neglect1.png'),
               ],
+              if (isRepair == 1) ...[Image.asset('assets/images/repair1.png')],
               Text("Score: $score", style: const TextStyle(fontSize: 18)),
               Text(
                 "Reasoning: $reasoning",

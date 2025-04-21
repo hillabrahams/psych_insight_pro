@@ -4,7 +4,8 @@ class JournalEntry {
   final int score;
   final String reasoning;
   final String confidence;
-  final bool isNeglect;
+  final int isNeglect;
+  final int isRepair;
   final String? timestamp; // ✅ New field (nullable for safety)
 
   JournalEntry({
@@ -14,6 +15,7 @@ class JournalEntry {
     required this.reasoning,
     required this.confidence,
     required this.isNeglect,
+    required this.isRepair,
     this.timestamp, // ✅ Include in constructor
   });
 
@@ -24,7 +26,8 @@ class JournalEntry {
       'score': score,
       'reasoning': reasoning,
       'confidence': confidence,
-      'isNeglect': isNeglect ? 1 : 0,
+      'isNeglect': isNeglect == 1 ? 1 : 0,
+      'isRepair': isRepair == 1 ? 1 : 0,
       'timestamp':
           timestamp ??
           DateTime.now().toString(), // ✅ Default to current time if null
@@ -38,7 +41,8 @@ class JournalEntry {
       score: map['score'],
       reasoning: map['reasoning'],
       confidence: map['confidence'],
-      isNeglect: map['isNeglect'] == 1,
+      isNeglect: map['isNeglect'] == 1 ? 1 : 0,
+      isRepair: map['isRepair'] == 1 ? 1 : 0,
       timestamp: map['timestamp'], // ✅ Retrieve from DB
     );
   }
