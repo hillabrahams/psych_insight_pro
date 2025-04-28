@@ -1,6 +1,8 @@
+// ignore_for_file: non_constant_identifier_names
+
 class JournalEntry {
   final int? id;
-  final String text;
+  final String entry_text;
   final int score;
   final String reasoning;
   final String confidence;
@@ -10,7 +12,7 @@ class JournalEntry {
 
   JournalEntry({
     this.id,
-    required this.text,
+    required this.entry_text,
     required this.score,
     required this.reasoning,
     required this.confidence,
@@ -22,7 +24,7 @@ class JournalEntry {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'text': text,
+      'entry_text': entry_text,
       'score': score,
       'reasoning': reasoning,
       'confidence': confidence,
@@ -37,7 +39,7 @@ class JournalEntry {
   factory JournalEntry.fromMap(Map<String, dynamic> map) {
     return JournalEntry(
       id: map['id'],
-      text: map['text'],
+      entry_text: map['entry_text'],
       score: map['score'],
       reasoning: map['reasoning'],
       confidence: map['confidence'],

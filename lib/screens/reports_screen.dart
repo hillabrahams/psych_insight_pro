@@ -19,7 +19,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   List<JournalEntry> _entries = [];
-  final Set<int> _selectedEntryIds = {};
   final DBHelper _dbHelper = DBHelper();
   final FlutterTts flutterTts = FlutterTts();
   bool _loading = false;
@@ -29,7 +28,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     await flutterTts.stop();
     final String message =
         'Score: ${entry.score}. '
-        '${entry.text}. '
+        '${entry.entry_text}. '
         'Reasoning: ${entry.reasoning}. '
         'Confidence: ${entry.confidence}. '
         'Neglect: ${entry.isNeglect == 1 ? "Yes" : "No"}.';
@@ -116,6 +115,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final timestamps = <String>[];
     final scoreSpots = <FlSpot>[];
     final regressionSpots = <FlSpot>[];
+    bool useSlopeforlineColor = false;
+    Color lineColor = Colors.green; // Define lineColor with a default value
 
     List<double> xVals = [];
     List<double> yVals = [];
@@ -123,6 +124,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     for (int i = 0; i < _entries.length; i++) {
       final x = i.toDouble();
       final y = _entries[i].score.toDouble();
+      if (y >= -10 && y <= 0) {
+        useSlopeforlineColor = true;
+      }
       scoreSpots.add(FlSpot(x, y));
       timestamps.add(_entries[i].timestamp ?? 'Entry $i');
       xVals.add(x);
@@ -139,7 +143,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final xSqSum = xVals.map((x) => x * x).reduce((a, b) => a + b);
     final slope = (n * xySum - xSum * ySum) / (n * xSqSum - xSum * xSum);
     final intercept = (ySum - slope * xSum) / n;
-    final lineColor = slope >= 0 ? Colors.green : Colors.red;
+
+    if (useSlopeforlineColor) {
+      lineColor =
+          slope >= 0
+              ? Colors.green
+              : Colors.red; // Update lineColor based on slope
+    } else {
+      lineColor = Colors.green; // Default color if slope is not used
+    }
 
     regressionSpots.addAll(xVals.map((x) => FlSpot(x, slope * x + intercept)));
 
@@ -361,7 +373,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(_selectedEntry!.text),
+                  Text(_selectedEntry!.entry_text),
                   const SizedBox(height: 8),
                   const Text(
                     'Reasoning:',
@@ -390,37 +402,40 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text('Reports', style: AppStyles.heading)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _pickDate(isStart: true),
-                    child: Text('Start: ${_formatDate(_startDate)}'),
-                  ),
+      body:
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _pickDate(isStart: true),
+                            child: Text('Start: ${_formatDate(_startDate)}'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _pickDate(isStart: false),
+                            child: Text('End: ${_formatDate(_endDate)}'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadEntries,
+                      child: const Text('Load Report'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildLineChart(screenWidth),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _pickDate(isStart: false),
-                    child: Text('End: ${_formatDate(_endDate)}'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadEntries,
-              child: const Text('Load Report'),
-            ),
-            const SizedBox(height: 16),
-            _buildLineChart(screenWidth),
-          ],
-        ),
-      ),
+              ),
     );
   }
 }

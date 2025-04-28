@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 import '../utils/journal_database.dart';
 import '../models/journal_entry.dart';
 
@@ -47,7 +49,7 @@ bool isNeglectFuzzy(String text, {int threshold = 60}) {
   return false;
 }
 
-bool isRepairFuzzy(String text, {int threshold = 20}) {
+bool isRepairFuzzy(String text, {int threshold = 60}) {
   final lower = text.toLowerCase();
   final List<String> repairPhrases = [
     "sorry",
@@ -94,7 +96,7 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
       final detectedNeglect = isNeglectFuzzy(entryInput);
       final detectedRepair = isRepairFuzzy(entryInput);
       final newEntry = JournalEntry(
-        text: entryInput,
+        entry_text: entryInput,
         score: result['score'],
         reasoning: result['reasoning'],
         confidence: result['confidence'].toString(),
@@ -122,17 +124,101 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
     }
   }
 
-  Future<Map<String, dynamic>?> analyzeEntry(String entryText) async {
-    final url = Uri.parse("http://localhost:8000/auto_label");
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({"text": entryText}),
-    );
+  // Future<Map<String, dynamic>?> analyzeEntry(String entryText) async {
+  //   final url = Uri.parse("http://192.168.5.88:8000/analyze");
+  //   final response = await http.post(
+  //     url,
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: jsonEncode({"text": entryText}),
+  //   );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
+  //   if (response.statusCode == 200) {
+  //     return jsonDecode(response.body);
+  //   } else {
+  //     return null;
+  //   }
+  // }
+  Future<Map<String, dynamic>?> analyzeEntry(String entryText) async {
+    const String url = "http://192.168.5.88:8000/analyze/";
+    if (kDebugMode) {
+      //print('[0] Entry Text: $entryText'); // Debug
+      print('[1] Preparing to call API. URL: $url'); // Debug 1
+    }
+
+    try {
+      // Encode the request body
+
+      final String requestBody = jsonEncode({"entry": entryText});
+      if (kDebugMode) {
+        //print('[1] Request Body: $requestBody'); // Debug 1
+        print('[2] Request Body: $requestBody'); // Debug 2
+        // Add to your try block:
+        print('Resolved URL: ${Uri.parse(url).host}');
+        print(
+          'DNS Lookup: ${await InternetAddress.lookup(Uri.parse(url).host)}',
+        );
+      }
+
+      // Make the POST request
+      if (kDebugMode) {
+        print('[3] Sending POST request...'); // Debug 3
+      }
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'accept': 'application/json',
+              'Connection': 'close',
+            },
+            body: requestBody,
+          )
+          .timeout(Duration(seconds: 45));
+
+      if (kDebugMode) {
+        print(
+          '[4] Request completed. Status Code: ${response.statusCode}',
+        ); // Debug 4
+        print('[5] Response Body: ${response.body}'); // Debug 5
+      }
+
+      if (response.statusCode == 307 || response.statusCode == 301) {
+        // Server wants to redirect
+        String? redirectLocation = response.headers['location'];
+        if (kDebugMode) {
+          print('[5] Redirecting to: $redirectLocation'); // Debug 5
+        }
+      }
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('[6] Success! Parsing JSON...'); // Debug 6
+        }
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        if (kDebugMode) {
+          print('[7] Error: Non-200 status code'); // Debug 7
+        }
+        return null;
+      }
+    } on TimeoutException {
+      if (kDebugMode) {
+        print('[X] Timeout: Server did not respond in 45 seconds.'); // Error 1
+        //print('[X] Timeout: Server did not respond in 10 seconds.'); // Error 1
+      }
+
+      return null;
+    } on http.ClientException catch (e) {
+      if (kDebugMode) {
+        print('[X] Client Exception: $e'); // Error 2
+        print('[X] Network Error: $e'); // Error 2
+        print('[X] Is the device on the same network as the server?');
+      }
+
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[X] Unexpected Error: $e'); // Error 3
+      }
       return null;
     }
   }
@@ -160,10 +246,10 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
             ),
             if (score != null) ...[
               const SizedBox(height: 20),
-              if (sentimentScore! >= 1) ...[
+              if (sentimentScore != null && sentimentScore! >= 1) ...[
                 Image.asset('assets/images/care1.png'),
               ],
-              if (sentimentScore! <= -1) ...[
+              if (sentimentScore != null && sentimentScore! <= -1) ...[
                 Image.asset('assets/images/abuse1.png'),
               ],
               if (isNeglect == 1) ...[

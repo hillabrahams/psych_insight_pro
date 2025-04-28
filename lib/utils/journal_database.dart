@@ -25,7 +25,7 @@ class JournalDatabase {
     await db.execute('''
       CREATE TABLE journal_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        text TEXT,
+        entry_text TEXT,
         score INTEGER,
         reasoning TEXT,
         confidence TEXT,

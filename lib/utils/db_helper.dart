@@ -30,7 +30,7 @@ class DBHelper {
     await db.execute('''
       CREATE TABLE $table (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        text TEXT NOT NULL,
+        entry_text TEXT NOT NULL,
         score INTEGER NOT NULL,
         reasoning TEXT NOT NULL,
         confidence TEXT NOT NULL,
