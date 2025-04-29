@@ -1,6 +1,8 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+//import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -15,68 +17,68 @@ class JournalAnalyzerScreen extends StatefulWidget {
   _JournalAnalyzerScreenState createState() => _JournalAnalyzerScreenState();
 }
 
-bool isNeglectFuzzy(String text, {int threshold = 60}) {
-  final lower = text.toLowerCase();
-  final List<String> neglectPhrases = [
-    "no one noticed",
-    "nobody cared",
-    "ignored",
-    "forgotten",
-    "no one asked",
-    "you didn’t ask",
-    "i was upset but",
-    "you didn’t respond",
-    "no one called",
-    "i felt invisible",
-    "i was left out",
-    "you didn’t say goodnight",
-    "you didn’t listen",
-    "you didn’t see me",
-    "i don’t think you noticed",
-    "they didn’t care",
-    "nobody showed up",
-    "i didn’t matter",
-  ];
+// bool isNeglectFuzzy(String text, {int threshold = 20}) {
+//   final lower = text.toLowerCase();
+//   final List<String> neglectPhrases = [
+//     "no one noticed",
+//     "nobody cared",
+//     "ignored",
+//     "forgotten",
+//     "no one asked",
+//     "you didn’t ask",
+//     "i was upset but",
+//     "you didn’t respond",
+//     "no one called",
+//     "i felt invisible",
+//     "i was left out",
+//     "you didn’t say goodnight",
+//     "you didn’t listen",
+//     "you didn’t see me",
+//     "i don’t think you noticed",
+//     "they didn’t care",
+//     "nobody showed up",
+//     "i didn’t matter",
+//   ];
 
-  for (var phrase in neglectPhrases) {
-    if (kDebugMode) {
-      print("Comparing: $phrase with $lower");
-      print("Ratio: ${ratio(phrase, lower)}");
-    }
-    if (ratio(phrase, lower) > threshold) return true;
-  }
+//   for (var phrase in neglectPhrases) {
+//     if (kDebugMode) {
+//       print("Comparing: $phrase with $lower");
+//       print("Ratio: ${ratio(phrase, lower)}");
+//     }
+//     if (ratio(phrase, lower) > threshold) return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
-bool isRepairFuzzy(String text, {int threshold = 60}) {
-  final lower = text.toLowerCase();
-  final List<String> repairPhrases = [
-    "sorry",
-    "apologize",
-    "forgive",
-    "make up",
-    "fix this",
-    "repair",
-    "reconcile",
-    "regret",
-    "understand",
-    "didn't mean to",
-    "move forward",
-    "want to make things right",
-    "what can I do",
-  ];
+// bool isRepairFuzzy(String text, {int threshold = 20}) {
+//   final lower = text.toLowerCase();
+//   final List<String> repairPhrases = [
+//     "sorry",
+//     "apologize",
+//     "forgive",
+//     "make up",
+//     "fix this",
+//     "repair",
+//     "reconcile",
+//     "regret",
+//     "understand",
+//     "didn't mean to",
+//     "move forward",
+//     "want to make things right",
+//     "what can I do",
+//   ];
 
-  for (var phrase in repairPhrases) {
-    if (kDebugMode) {
-      print("Comparing: $phrase with $lower");
-      print("Ratio: ${ratio(phrase, lower)}");
-    }
-    if (ratio(phrase, lower) > threshold) return true;
-  }
+//   for (var phrase in repairPhrases) {
+//     if (kDebugMode) {
+//       print("Comparing: $phrase with $lower");
+//       print("Ratio: ${ratio(phrase, lower)}");
+//     }
+//     if (ratio(phrase, lower) > threshold) return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   final TextEditingController _controller = TextEditingController();
@@ -85,6 +87,8 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
   String? reasoning;
   String? confidence;
   int? sentimentScore;
+  int? neglect_true = 0;
+  int? repair_true = 0;
   int? isNeglect = 0;
   int? isRepair = 0;
 
@@ -93,15 +97,15 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
     final result = await analyzeEntry(entryInput);
 
     if (result != null) {
-      final detectedNeglect = isNeglectFuzzy(entryInput);
-      final detectedRepair = isRepairFuzzy(entryInput);
+      // final detectedNeglect = isNeglectFuzzy(entryInput);
+      // final detectedRepair = isRepairFuzzy(entryInput);
       final newEntry = JournalEntry(
         entry_text: entryInput,
         score: result['score'],
         reasoning: result['reasoning'],
         confidence: result['confidence'].toString(),
-        isNeglect: detectedNeglect ? 1 : 0,
-        isRepair: detectedRepair ? 1 : 0,
+        isNeglect: result['neglect_true'] ? 1 : 0,
+        isRepair: result['repair_true'] ? 1 : 0,
       );
 
       await JournalDatabase.instance.insertEntry(newEntry);
@@ -112,8 +116,8 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
         sentimentScore = result['score'];
         reasoning = result['reasoning'];
         confidence = result['confidence'].toString();
-        isNeglect = detectedNeglect ? 1 : 0;
-        isRepair = detectedRepair ? 1 : 0;
+        isNeglect = result['neglect_true'] ? 1 : 0;
+        isRepair = result['repair_true'] ? 1 : 0;
       });
     } else {
       setState(() {
@@ -252,10 +256,12 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
               if (sentimentScore != null && sentimentScore! <= -1) ...[
                 Image.asset('assets/images/abuse1.png'),
               ],
-              if (isNeglect == 1) ...[
+              if (isNeglect != null && isNeglect! == 1) ...[
                 Image.asset('assets/images/neglect1.png'),
               ],
-              if (isRepair == 1) ...[Image.asset('assets/images/repair1.png')],
+              if (isRepair != null && isRepair! == 1) ...[
+                Image.asset('assets/images/repair1.png'),
+              ],
               Text("Score: $score", style: const TextStyle(fontSize: 18)),
               Text(
                 "Reasoning: $reasoning",
