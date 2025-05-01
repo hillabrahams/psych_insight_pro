@@ -245,6 +245,15 @@ class _JournalAnalyzerScreenState extends State<JournalAnalyzerScreen> {
             ),
             const SizedBox(height: 12),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
               onPressed: _submitText,
               child: const Text("Analyze and Save"),
             ),

@@ -7,6 +7,7 @@ import '../styles.dart';
 import '../utils/notification_service.dart';
 import '../utils/db_helper.dart';
 import '../models/journal_entry.dart';
+import 'package:intl/intl.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -96,7 +97,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
         _entries = results;
       });
     } catch (e) {
-      NotificationService.showErrorDialog(context, 'Failed to load entries.');
+      if (mounted) {
+        NotificationService.showErrorDialog(context, 'Failed to load entries.');
+      }
     } finally {
       setState(() {
         _loading = false;
@@ -386,7 +389,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     'Neglect: ${_selectedEntry!.isNeglect == 1 ? "Yes" : "No"}'
                     ' Repair: ${_selectedEntry!.isRepair == 1 ? "Yes" : "No"}',
                   ),
-                  Text('Date & Time: ${_selectedEntry!.timestamp}'),
+                  Text(
+                    'Date & Time: ${_selectedEntry!.timestamp != null ? DateFormat('MM-dd-yyyy hh:mm:ss').format(DateTime.parse(_selectedEntry!.timestamp!)) : "Invalid date"}',
+                  ),
                 ],
               ),
             ),
@@ -413,21 +418,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
+                            style: AppStyles.buttonStyle,
                             onPressed: () => _pickDate(isStart: true),
-                            child: Text('Start: ${_formatDate(_startDate)}'),
+                            child: Text('>=  ${_formatDate(_startDate)}'),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
+                            style: AppStyles.buttonStyle,
                             onPressed: () => _pickDate(isStart: false),
-                            child: Text('End: ${_formatDate(_endDate)}'),
+                            child: Text('<=  ${_formatDate(_endDate)}'),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
+                      style: AppStyles.buttonStyle,
                       onPressed: _loadEntries,
                       child: const Text('Load Report'),
                     ),

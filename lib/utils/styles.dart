@@ -30,6 +30,8 @@ class AppStyles {
     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
     textStyle: TextStyle(fontSize: 18),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    foregroundColor: Colors.white, // Text color
+    backgroundColor: primaryColor, // Button background color
   );
 
   // Light Theme
