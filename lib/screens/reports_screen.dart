@@ -19,6 +19,7 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
+
   List<JournalEntry> _entries = [];
   final DBHelper _dbHelper = DBHelper();
   final FlutterTts flutterTts = FlutterTts();
@@ -49,7 +50,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Future<void> _pickDate({required bool isStart}) async {
     final now = DateTime.now();
-    final initial = isStart ? (_startDate ?? now) : (_endDate ?? now);
+    final nowMinus7 = DateTime.now().subtract(const Duration(days: 7));
+    final initial = isStart ? (_startDate ?? nowMinus7) : (_endDate ?? now);
 
     final picked = await showDatePicker(
       context: context,
